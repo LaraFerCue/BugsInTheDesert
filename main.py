@@ -6,7 +6,7 @@ from typing import Tuple, List
 import pygame
 
 BOARD_LIMITS_COLOR = 155, 0, 0
-WINDOW = WIN_WIDTH, WIN_HEIGHT = 800, 820
+WINDOW = WIN_WIDTH, WIN_HEIGHT = 800, 840
 NUMBER_OF_ROWS = 8
 NUMBER_OF_COLUMNS = 8
 HEIGHT_OFFSET = 0.25 * WIN_HEIGHT
@@ -58,8 +58,8 @@ class Tile:
         return bug_pos_x, bug_pos_y
 
     def draw_tile(self, scr: pygame.Surface):
-        board_rect = [self.position[0], self.position[1], self.position[0] + Tile.TILE_WIDTH,
-                      self.position[1] + Tile.TILE_HEIGHT]
+        board_rect = [self.position[0], self.position[1], Tile.TILE_WIDTH,
+                      Tile.TILE_HEIGHT]
 
         rect: pygame.Surface = pygame.Surface((Tile.TILE_WIDTH, Tile.TILE_HEIGHT))
         if (Bug.BOARD_OPENER in on_play_bugs and not self.opened) or (
@@ -75,7 +75,7 @@ class Tile:
                 scr.blit(bug_image, self.bug_position)
         else:
             tile_image = pygame.image.load('resources/tile.gif').convert()
-            scr.blit(tile_image, self.position)
+            # scr.blit(tile_image, self.position)
 
         pygame.draw.rect(scr, BOARD_LIMITS_COLOR, board_rect, 1)
 
