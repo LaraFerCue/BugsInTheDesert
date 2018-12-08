@@ -58,7 +58,8 @@ class Tile:
                       self.position[1] + Tile.TILE_HEIGHT]
 
         rect: pygame.Surface = pygame.Surface((Tile.TILE_WIDTH, Tile.TILE_HEIGHT))
-        if self.opened:
+        if (Bug.BOARD_OPENER in on_play_bugs and not self.opened) or (
+                self.opened and Bug.BOARD_OPENER not in on_play_bugs):
             rect.set_alpha(12)
             rect.fill(Tile.OPEN_TILE_COLOR)
             scr.blit(rect, self.position)
