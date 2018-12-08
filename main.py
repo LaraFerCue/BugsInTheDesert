@@ -14,20 +14,20 @@ HEIGHT_OFFSET = 0.25 * WIN_HEIGHT
 
 # Bugs to be fixed:
 # - A bug makes all the tiles open -> closes the tiles
-# - A bug makes the bugs move around -> bugs will be in fixed positions
 # - A bug makes the click events to translate a number of tiles horizontally
 # - A bug makes the click events to translate a number of tiles vertically
 # - A bug makes the click events to be reverted on the board horizontally
 # - A bug makes the click events to be reverted on the board vertically
+# - A bug makes the bugs move around -> bugs will be in fixed positions
 # - A bug creates fake bug tiles
 # - A bug closes tiles
 class Bug(Enum):
     BOARD_OPENER = 0
-    BUG_MOVER = 1
-    HORIZONTAL_TILE_TRANSLATOR = 2
-    VERTICAL_TILE_TRANSLATOR = 3
-    HORIZONTAL_TILE_REVERTER = 4
-    VERTICAL_TILE_REVERTER = 5
+    HORIZONTAL_TILE_TRANSLATOR = 1
+    VERTICAL_TILE_TRANSLATOR = 2
+    HORIZONTAL_TILE_REVERTER = 3
+    VERTICAL_TILE_REVERTER = 4
+    BUG_MOVER = 5
     BUG_FAKER = 6
     TILE_CLOSER = 7
     FAKE_BUG = 99
@@ -89,6 +89,22 @@ def draw_tile_board(scr: pygame.Surface, board: List[Tile]):
     pygame.draw.rect(scr, BOARD_LIMITS_COLOR, limit_board, 1)
     for tile in board:
         tile.draw_tile(scr)
+
+
+def alter_position(position: Tuple[int, int]) -> Tuple[int, int]:
+    x_coord = position[0]
+    y_coord = position[1]
+
+    if Bug.HORIZONTAL_TILE_TRANSLATOR in on_play_bugs:
+        x_coord = (x_coord + 4 * Tile.TILE_WIDTH) % WIN_WIDTH
+    if Bug.VERTICAL_TILE_TRANSLATOR in on_play_bugs:
+        y_coord = (y_coord + 4 * Tile.TILE_HEIGHT) % WIN_HEIGHT
+    if Bug.HORIZONTAL_TILE_REVERTER in on_play_bugs:
+        x_coord = WIN_WIDTH - x_coord
+    if Bug.VERTICAL_TILE_REVERTER in on_play_bugs:
+        y_coord = WIN_HEIGHT - y_coord + HEIGHT_OFFSET
+
+    return x_coord, y_coord
 
 
 def mouse_clicked(board: List[Tile], position: Tuple[int, int]) -> Union[pygame.Surface, None]:
