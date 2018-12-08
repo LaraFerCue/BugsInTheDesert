@@ -90,6 +90,8 @@ def draw_tile_board(scr: pygame.Surface, board: List[Tile]):
 def mouse_clicked(board: List[Tile], position: Tuple[int, int]):
     for tile in board:
         if tile.is_in_range(position):
+            if tile.bug != Bug.NO_BUG:
+                on_play_bugs.remove(on_play_bugs[0])
             tile.opened = True
             return None
 
