@@ -74,8 +74,8 @@ class Tile:
                     bug_image = pygame.image.load('resources/bug.gif').convert()
                 scr.blit(bug_image, self.bug_position)
         else:
-            rect.fill(Tile.CLOSED_TILE_COLOR)
-            scr.blit(rect, self.position)
+            tile_image = pygame.image.load('resources/tile.gif').convert()
+            scr.blit(tile_image, self.position)
 
         pygame.draw.rect(scr, BOARD_LIMITS_COLOR, board_rect, 1)
 
