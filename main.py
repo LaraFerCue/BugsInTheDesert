@@ -114,7 +114,6 @@ def mouse_clicked(board: List[Tile], position: Tuple[int, int]) -> Bug:
         if tile.is_in_range(buggy_position):
             if tile.bug != Bug.NO_BUG and not tile.found_bug and tile.bug != Bug.FAKE_BUG:
                 bug = on_play_bugs[0]
-                on_play_bugs.remove(bug)
                 print(f'bug {bug} found')
                 tile.found_bug = True
                 tile.opened = True
@@ -167,8 +166,20 @@ def bug_faker(board: List[Tile]):
             return
 
 
+def bug_tile_closer(board: List[Tile]) -> Bug:
+    for tile in board:
+        if tile.opened:
+            tile.opened = False
+            if tile.bug != Bug.NO_BUG and tile.bug != Bug.FAKE_BUG:
+                tile.found_bug = False
+                return tile.bug
+            return Bug.NO_BUG
+    return Bug.NO_BUG
+
+
 playing_board: List[Tile] = board_init()
 on_play_bugs: List[Bug] = bug_init(playing_board)
+found_bugs: List[Bug] = []
 pygame.init()
 pygame.font.init()
 comic_sans_font: pygame.font.Font = pygame.font.SysFont('Comic Sans MS', 20)
@@ -180,6 +191,7 @@ pygame.display.set_caption('Bugs on the desert')
 bg_image = pygame.image.load('resources/background.jpg').convert()
 bug_mover_counter = 5
 bug_faker_counter = 2
+bug_tile_closer_counter = 5
 bug_found = Bug.NO_BUG
 while True:
     for event in pygame.event.get():
@@ -187,6 +199,9 @@ while True:
             sys.exit()
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             bug_found = mouse_clicked(playing_board, event.pos)
+            if bug_found != Bug.NO_BUG:
+                on_play_bugs.remove(bug_found)
+                found_bugs.append(bug_found)
             if Bug.BUG_MOVER in on_play_bugs:
                 if bug_mover_counter > 0:
                     bug_mover_counter -= 1
@@ -199,6 +214,16 @@ while True:
                 else:
                     bug_faker(playing_board)
                     bug_faker_counter = 2
+            if Bug.TILE_CLOSER in on_play_bugs:
+                if bug_tile_closer_counter > 0:
+                    bug_tile_closer_counter -= 1
+                else:
+                    bug = bug_tile_closer(playing_board)
+                    bug_tile_closer_counter = 5
+                    if bug != Bug.NO_BUG and bug != Bug.FAKE_BUG:
+                        bug = found_bugs[0]
+                        found_bugs.remove(bug)
+                        on_play_bugs = [bug] + on_play_bugs
 
     screen.fill(color=(255, 255, 255))
     screen.blit(bg_image, [0, 0])
