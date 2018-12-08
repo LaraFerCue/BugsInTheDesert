@@ -1,4 +1,5 @@
 import sys
+from typing import Tuple, List
 
 import pygame
 
@@ -6,22 +7,46 @@ BOARD_LIMITS_COLOR = 155, 0, 0
 WINDOW = WIN_WIDTH, WIN_HEIGHT = 800, 800
 NUMBER_OF_ROWS = 8
 NUMBER_OF_COLUMNS = 8
+HEIGHT_OFFSET = 0.25 * WIN_HEIGHT
 
 
-def draw_tile_board(scr: pygame.Surface):
-    tile_width = WIN_WIDTH / NUMBER_OF_COLUMNS
-    tile_height = WIN_HEIGHT / NUMBER_OF_ROWS
+class Tile:
+    CLOSED_TILE_COLOR = [252, 166, 255]
+    OPEN_TILE_COLOR = [252, 255, 166]
+    TILE_WIDTH = WIN_WIDTH / NUMBER_OF_COLUMNS
+    TILE_HEIGHT = WIN_HEIGHT / NUMBER_OF_ROWS
 
-    height_offset = 0.25 * WIN_HEIGHT
-    playing_board: pygame.Rect = [0, height_offset, WIN_WIDTH, 0.75 * WIN_HEIGHT]
-    pygame.draw.rect(scr, BOARD_LIMITS_COLOR, playing_board, 1)
+    def __init__(self):
+        self.opened: bool = False
+        self.position: Tuple[int, int] = (0, 0)
 
-    for row in range(0, NUMBER_OF_ROWS):
-        for column in range(0, NUMBER_OF_COLUMNS):
-            tile_rect: pygame.Rect = [row * tile_width, height_offset + column * tile_height, (row + 1) * tile_width,
-                                      height_offset + (column + 1) * tile_height]
-            pygame.draw.rect(scr, BOARD_LIMITS_COLOR, tile_rect, 1)
+    def draw_tile(self, scr: pygame.Surface):
+        board_rect = [self.position[0], self.position[1], self.position[0] + Tile.TILE_WIDTH,
+                      self.position[1] + Tile.TILE_HEIGHT]
+        tile_rect = [self.position[0] + 1, self.position[1] + 1, self.position[0] + Tile.TILE_WIDTH - 1,
+                     self.position[1] + Tile.TILE_HEIGHT - 1]
+        pygame.draw.rect(scr, BOARD_LIMITS_COLOR, board_rect, 1)
 
+        print(f'tile {tile_rect} is {self.opened}')
+        if self.opened:
+            pygame.draw.rect(scr, Tile.OPEN_TILE_COLOR, tile_rect)
+        else:
+            pygame.draw.rect(scr, Tile.CLOSED_TILE_COLOR, tile_rect)
+
+
+def draw_tile_board(scr: pygame.Surface, board: List[Tile]):
+    limit_board: pygame.Rect = [0, HEIGHT_OFFSET, WIN_WIDTH, 0.75 * WIN_HEIGHT]
+    pygame.draw.rect(scr, BOARD_LIMITS_COLOR, limit_board, 1)
+    for tile in board:
+        tile.draw_tile(scr)
+
+
+playing_board: List[Tile] = []
+for row in range(0, NUMBER_OF_ROWS):
+    for column in range(0, NUMBER_OF_COLUMNS):
+        created_tile = Tile()
+        created_tile.position = row * Tile.TILE_WIDTH, HEIGHT_OFFSET + column * Tile.TILE_HEIGHT
+        playing_board.append(created_tile)
 
 pygame.init()
 
@@ -35,5 +60,5 @@ while True:
     screen.fill(color=(255, 255, 255))
     screen.blit(bg_image, [0, 0])
 
-    draw_tile_board(screen)
+    draw_tile_board(screen, board=playing_board)
     pygame.display.flip()
