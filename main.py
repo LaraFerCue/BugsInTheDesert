@@ -27,13 +27,13 @@ pygame.init()
 
 screen: pygame.Surface = pygame.display.set_mode(WINDOW)
 pygame.display.set_caption('Bugs on the desert')
-# bg_image = pygame.image.load('resources/background.jpg').convert()
+bg_image = pygame.image.load('resources/background.jpg').convert()
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
-    # screen.blit(bg_image, [0, 0])
-
     screen.fill(color=(255, 255, 255))
+    screen.blit(bg_image, [0, 0])
+
     draw_tile_board(screen)
     pygame.display.flip()
