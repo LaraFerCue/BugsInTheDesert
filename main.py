@@ -110,7 +110,6 @@ def alter_position(position: Tuple[int, int]) -> Tuple[int, int]:
 
 def mouse_clicked(board: List[Tile], position: Tuple[int, int]) -> Union[pygame.Surface, None]:
     buggy_position = alter_position(position)
-    print(f'original {position} | altered {buggy_position}')
     for tile in board:
         if tile.is_in_range(buggy_position):
             text = None
