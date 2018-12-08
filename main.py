@@ -53,8 +53,8 @@ class Tile:
 
     @property
     def bug_position(self) -> Tuple[int, int]:
-        bug_pos_x = int(self.position[0] + Tile.TILE_WIDTH / 2)
-        bug_pos_y = int(self.position[1] + Tile.TILE_HEIGHT / 2)
+        bug_pos_x = int(self.position[0] + Tile.TILE_WIDTH / 2) - 30
+        bug_pos_y = int(self.position[1] + Tile.TILE_HEIGHT / 2) - 30
         return bug_pos_x, bug_pos_y
 
     def draw_tile(self, scr: pygame.Surface):
@@ -69,8 +69,10 @@ class Tile:
             scr.blit(rect, self.position)
             if self.bug != Bug.NO_BUG:
                 if self.bug == Bug.FAKE_BUG:
-                    pygame.draw.circle(scr, Tile.FAKE_BUG_COLOR, self.bug_position, int(Tile.TILE_WIDTH / 4))
-                pygame.draw.circle(scr, Tile.BUG_COLOR, self.bug_position, int(Tile.TILE_WIDTH / 4))
+                    bug_image = pygame.image.load('resources/fake_bug.gif').convert()
+                else:
+                    bug_image = pygame.image.load('resources/bug.gif').convert()
+                scr.blit(bug_image, self.bug_position)
         else:
             rect.fill(Tile.CLOSED_TILE_COLOR)
             scr.blit(rect, self.position)
