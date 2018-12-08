@@ -1,7 +1,7 @@
 import sys
 from enum import Enum
 from random import randrange
-from typing import Tuple, List
+from typing import Tuple, List, Union
 
 import pygame
 
@@ -32,6 +32,9 @@ class Bug(Enum):
     TILE_CLOSER = 7
     FAKE_BUG = 99
     NO_BUG = -1
+
+    def __str__(self):
+        return self.name
 
 
 class Tile:
@@ -88,13 +91,17 @@ def draw_tile_board(scr: pygame.Surface, board: List[Tile]):
         tile.draw_tile(scr)
 
 
-def mouse_clicked(board: List[Tile], position: Tuple[int, int]):
+def mouse_clicked(board: List[Tile], position: Tuple[int, int]) -> Union[pygame.Surface, None]:
     for tile in board:
         if tile.is_in_range(position):
+            text = None
             if tile.bug != Bug.NO_BUG:
-                on_play_bugs.remove(on_play_bugs[0])
+                bug = on_play_bugs[0]
+                text: pygame.Surface = comic_sans_font.render(f'The bug {bug} has been found!', False, (0, 0, 0))
+                on_play_bugs.remove(bug)
             tile.opened = True
-            return None
+            return text
+    return None
 
 
 def board_init() -> List[Tile]:
@@ -137,7 +144,9 @@ while True:
         if event.type == pygame.QUIT:
             sys.exit()
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            mouse_clicked(playing_board, event.pos)
+            text = mouse_clicked(playing_board, event.pos)
+            if text is not None:
+                text_surface = text
     screen.fill(color=(255, 255, 255))
     screen.blit(bg_image, [0, 0])
     screen.blit(text_surface, (50, 50))
