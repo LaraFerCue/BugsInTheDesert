@@ -53,6 +53,7 @@ def mouse_clicked(board: List[Tile], position: Tuple[int, int]):
     for tile in board:
         if tile.is_in_range(position):
             tile.opened = True
+            return None
 
 
 playing_board: List[Tile] = []
