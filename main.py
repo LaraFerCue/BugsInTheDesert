@@ -27,11 +27,17 @@ class Tile:
                      self.position[1] + Tile.TILE_HEIGHT - 1]
         pygame.draw.rect(scr, BOARD_LIMITS_COLOR, board_rect, 1)
 
-        print(f'tile {tile_rect} is {self.opened}')
         if self.opened:
             pygame.draw.rect(scr, Tile.OPEN_TILE_COLOR, tile_rect)
         else:
             pygame.draw.rect(scr, Tile.CLOSED_TILE_COLOR, tile_rect)
+
+    def is_in_range(self, position: Tuple[int, int]) -> bool:
+        if position[0] < self.position[0] or position[0] > self.position[0] + Tile.TILE_WIDTH:
+            return False
+        if position[1] < self.position[1] or position[1] > self.position[1] + Tile.TILE_HEIGHT:
+            return False
+        return True
 
 
 def draw_tile_board(scr: pygame.Surface, board: List[Tile]):
@@ -39,6 +45,12 @@ def draw_tile_board(scr: pygame.Surface, board: List[Tile]):
     pygame.draw.rect(scr, BOARD_LIMITS_COLOR, limit_board, 1)
     for tile in board:
         tile.draw_tile(scr)
+
+
+def mouse_clicked(board: List[Tile], position: Tuple[int, int]):
+    for tile in board:
+        if tile.is_in_range(position):
+            tile.opened = True
 
 
 playing_board: List[Tile] = []
@@ -57,6 +69,8 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            mouse_clicked(playing_board, event.pos)
     screen.fill(color=(255, 255, 255))
     screen.blit(bg_image, [0, 0])
 
