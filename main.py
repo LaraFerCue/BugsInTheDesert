@@ -62,15 +62,14 @@ class Tile:
             rect.set_alpha(12)
             rect.fill(Tile.OPEN_TILE_COLOR)
             scr.blit(rect, self.position)
+            if self.bug != Bug.NO_BUG:
+                if self.bug == Bug.FAKE_BUG:
+                    pygame.draw.circle(scr, Tile.FAKE_BUG_COLOR, self.bug_position, int(Tile.TILE_WIDTH / 4))
+                pygame.draw.circle(scr, Tile.BUG_COLOR, self.bug_position, int(Tile.TILE_WIDTH / 4))
         else:
             rect.fill(Tile.CLOSED_TILE_COLOR)
             scr.blit(rect, self.position)
 
-        if self.bug != Bug.NO_BUG:
-            if self.bug == Bug.FAKE_BUG:
-                pygame.draw.circle(scr, Tile.FAKE_BUG_COLOR, self.bug_position, int(Tile.TILE_WIDTH / 4))
-            print(f'printing bug {self.bug} on {self.bug_position} size {Tile.TILE_WIDTH / 4}')
-            pygame.draw.circle(scr, Tile.BUG_COLOR, self.bug_position, int(Tile.TILE_WIDTH / 4))
         pygame.draw.rect(scr, BOARD_LIMITS_COLOR, board_rect, 1)
 
     def is_in_range(self, position: Tuple[int, int]) -> bool:
