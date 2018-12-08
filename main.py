@@ -223,7 +223,7 @@ while True:
                     bug = bug_tile_closer(playing_board)
                     bug_tile_closer_counter = 5
                     if bug != Bug.NO_BUG and bug != Bug.FAKE_BUG:
-                        bug = found_bugs[0]
+                        bug = found_bugs[len(found_bugs) - 1]
                         found_bugs.remove(bug)
                         on_play_bugs = [bug] + on_play_bugs
 
