@@ -109,13 +109,16 @@ def alter_position(position: Tuple[int, int]) -> Tuple[int, int]:
 
 
 def mouse_clicked(board: List[Tile], position: Tuple[int, int]) -> Union[pygame.Surface, None]:
+    buggy_position = alter_position(position)
+    print(f'original {position} | altered {buggy_position}')
     for tile in board:
-        if tile.is_in_range(position):
+        if tile.is_in_range(buggy_position):
             text = None
-            if tile.bug != Bug.NO_BUG:
+            if tile.bug != Bug.NO_BUG and not tile.found_bug:
                 bug = on_play_bugs[0]
                 text: pygame.Surface = comic_sans_font.render(f'The bug {bug} has been found!', False, (0, 0, 0))
                 on_play_bugs.remove(bug)
+                tile.found_bug = True
             tile.opened = True
             return text
     return None
