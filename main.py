@@ -1,7 +1,7 @@
 import sys
 from enum import Enum
 from random import randrange
-from typing import Tuple, List, Union
+from typing import Tuple, List
 
 import pygame
 
@@ -108,19 +108,19 @@ def alter_position(position: Tuple[int, int]) -> Tuple[int, int]:
     return x_coord, y_coord
 
 
-def mouse_clicked(board: List[Tile], position: Tuple[int, int]) -> Union[pygame.Surface, None]:
+def mouse_clicked(board: List[Tile], position: Tuple[int, int]) -> Bug:
     buggy_position = alter_position(position)
     for tile in board:
         if tile.is_in_range(buggy_position):
-            text = None
-            if tile.bug != Bug.NO_BUG and not tile.found_bug:
+            if tile.bug != Bug.NO_BUG and not tile.found_bug and tile.bug != Bug.FAKE_BUG:
                 bug = on_play_bugs[0]
-                text: pygame.Surface = comic_sans_font.render(f'The bug {bug} has been found!', False, (0, 0, 0))
                 on_play_bugs.remove(bug)
+                print(f'bug {bug} found')
                 tile.found_bug = True
+                tile.opened = True
+                return bug
             tile.opened = True
-            return text
-    return None
+    return Bug.NO_BUG
 
 
 def board_init() -> List[Tile]:
@@ -147,31 +147,70 @@ def bug_init(board: List[Tile]) -> List[Bug]:
     return bugs
 
 
+def bug_mover(board: List[Tile]):
+    for tile in board:
+        if tile.bug != Bug.NO_BUG and not tile.opened:
+            number_attempts = 10
+            position = randrange(NUMBER_OF_ROWS * NUMBER_OF_COLUMNS - 1)
+            while (board[position].bug != Bug.NO_BUG or board[position].opened) and number_attempts > 0:
+                position = randrange(NUMBER_OF_ROWS * NUMBER_OF_COLUMNS - 1)
+                number_attempts -= 1
+            if number_attempts:
+                board[position].bug = tile.bug
+                tile.bug = Bug.NO_BUG
+
+
+def bug_faker(board: List[Tile]):
+    for tile in board:
+        if tile.bug == Bug.NO_BUG and not tile.opened:
+            tile.bug = Bug.FAKE_BUG
+            return
+
+
 playing_board: List[Tile] = board_init()
 on_play_bugs: List[Bug] = bug_init(playing_board)
 pygame.init()
 pygame.font.init()
 comic_sans_font: pygame.font.Font = pygame.font.SysFont('Comic Sans MS', 20)
 
-default_text_surface: pygame.Surface = comic_sans_font.render('Click on the bugs!', False, (0, 0, 0))
-text_surface = default_text_surface
+text_surface: pygame.Surface = comic_sans_font.render('Click on the bugs!', False, (0, 0, 0))
 
 screen: pygame.Surface = pygame.display.set_mode(WINDOW)
 pygame.display.set_caption('Bugs on the desert')
 bg_image = pygame.image.load('resources/background.jpg').convert()
+bug_mover_counter = 5
+bug_faker_counter = 2
+bug_found = Bug.NO_BUG
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            text = mouse_clicked(playing_board, event.pos)
-            if text is not None:
-                text_surface = text
-            else:
-                text_surface = default_text_surface
+            bug_found = mouse_clicked(playing_board, event.pos)
+            if Bug.BUG_MOVER in on_play_bugs:
+                if bug_mover_counter > 0:
+                    bug_mover_counter -= 1
+                else:
+                    bug_mover(playing_board)
+                    bug_mover_counter = 5
+            if Bug.BUG_FAKER in on_play_bugs:
+                if bug_faker_counter > 0:
+                    bug_faker_counter -= 1
+                else:
+                    bug_faker(playing_board)
+                    bug_faker_counter = 2
+
     screen.fill(color=(255, 255, 255))
     screen.blit(bg_image, [0, 0])
+
     screen.blit(text_surface, (50, 50))
+
+    if not len(on_play_bugs):
+        bug_text_surface: pygame.Surface = comic_sans_font.render(f'No bugs left! Congratulations!', False, (0, 0, 0))
+        screen.blit(bug_text_surface, (50, 80))
+    elif bug_found != Bug.NO_BUG:
+        bug_text_surface: pygame.Surface = comic_sans_font.render(f'Bug {bug_found} found!', False, (0, 0, 0))
+        screen.blit(bug_text_surface, (50, 80))
 
     draw_tile_board(screen, board=playing_board)
     pygame.display.flip()
