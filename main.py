@@ -53,8 +53,8 @@ class Tile:
 
     @property
     def bug_position(self) -> Tuple[int, int]:
-        bug_pos_x = int(self.position[0] + Tile.TILE_WIDTH / 2) - 30
-        bug_pos_y = int(self.position[1] + Tile.TILE_HEIGHT / 2) - 30
+        bug_pos_x = self.position[0] + 5
+        bug_pos_y = self.position[1] + 5
         return bug_pos_x, bug_pos_y
 
     def draw_tile(self, scr: pygame.Surface):
