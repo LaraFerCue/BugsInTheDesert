@@ -122,6 +122,10 @@ def bug_init(board: List[Tile]) -> List[Bug]:
 playing_board: List[Tile] = board_init()
 on_play_bugs: List[Bug] = bug_init(playing_board)
 pygame.init()
+pygame.font.init()
+comic_sans_font: pygame.font.Font = pygame.font.SysFont('Comic Sans MS', 20)
+
+text_surface: pygame.Surface = comic_sans_font.render('Click on the bugs!', False, (0, 0, 0))
 
 screen: pygame.Surface = pygame.display.set_mode(WINDOW)
 pygame.display.set_caption('Bugs on the desert')
@@ -134,6 +138,7 @@ while True:
             mouse_clicked(playing_board, event.pos)
     screen.fill(color=(255, 255, 255))
     screen.blit(bg_image, [0, 0])
+    screen.blit(text_surface, (50, 50))
 
     draw_tile_board(screen, board=playing_board)
     pygame.display.flip()
