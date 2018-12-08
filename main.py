@@ -49,6 +49,7 @@ class Tile:
         self.opened: bool = False
         self.position: Tuple[int, int] = (0, 0)
         self.bug: Bug = Bug.NO_BUG
+        self.found_bug: bool = False
 
     @property
     def bug_position(self) -> Tuple[int, int]:
@@ -150,7 +151,8 @@ pygame.init()
 pygame.font.init()
 comic_sans_font: pygame.font.Font = pygame.font.SysFont('Comic Sans MS', 20)
 
-text_surface: pygame.Surface = comic_sans_font.render('Click on the bugs!', False, (0, 0, 0))
+default_text_surface: pygame.Surface = comic_sans_font.render('Click on the bugs!', False, (0, 0, 0))
+text_surface = default_text_surface
 
 screen: pygame.Surface = pygame.display.set_mode(WINDOW)
 pygame.display.set_caption('Bugs on the desert')
@@ -163,6 +165,8 @@ while True:
             text = mouse_clicked(playing_board, event.pos)
             if text is not None:
                 text_surface = text
+            else:
+                text_surface = default_text_surface
     screen.fill(color=(255, 255, 255))
     screen.blit(bg_image, [0, 0])
     screen.blit(text_surface, (50, 50))
