@@ -12,7 +12,7 @@ HEIGHT_OFFSET = 0.25 * WIN_HEIGHT
 
 class Tile:
     CLOSED_TILE_COLOR = [252, 166, 255]
-    OPEN_TILE_COLOR = [252, 255, 166]
+    OPEN_TILE_COLOR = [252, 255, 166, 0]
     TILE_WIDTH = WIN_WIDTH / NUMBER_OF_COLUMNS
     TILE_HEIGHT = WIN_HEIGHT / NUMBER_OF_ROWS
 
@@ -23,14 +23,16 @@ class Tile:
     def draw_tile(self, scr: pygame.Surface):
         board_rect = [self.position[0], self.position[1], self.position[0] + Tile.TILE_WIDTH,
                       self.position[1] + Tile.TILE_HEIGHT]
-        tile_rect = [self.position[0] + 1, self.position[1] + 1, self.position[0] + Tile.TILE_WIDTH - 1,
-                     self.position[1] + Tile.TILE_HEIGHT - 1]
-        pygame.draw.rect(scr, BOARD_LIMITS_COLOR, board_rect, 1)
 
+        rect: pygame.Surface = pygame.Surface((Tile.TILE_WIDTH, Tile.TILE_HEIGHT))
         if self.opened:
-            pygame.draw.rect(scr, Tile.OPEN_TILE_COLOR, tile_rect)
+            rect.set_alpha(12)
+            rect.fill(Tile.OPEN_TILE_COLOR)
+            scr.blit(rect, self.position)
         else:
-            pygame.draw.rect(scr, Tile.CLOSED_TILE_COLOR, tile_rect)
+            rect.fill(Tile.CLOSED_TILE_COLOR)
+            scr.blit(rect, self.position)
+        pygame.draw.rect(scr, BOARD_LIMITS_COLOR, board_rect, 1)
 
     def is_in_range(self, position: Tuple[int, int]) -> bool:
         if position[0] < self.position[0] or position[0] > self.position[0] + Tile.TILE_WIDTH:
