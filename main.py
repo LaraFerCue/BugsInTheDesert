@@ -6,12 +6,10 @@ from typing import Tuple, List
 import pygame
 
 from src.bug import Bug
+from src.board import Tile, NUMBER_OF_ROWS, NUMBER_OF_COLUMNS, BOARD_LIMITS_COLOR
 from src.window import Window
 
-BOARD_LIMITS_COLOR = 155, 0, 0
 WINDOW = WIN_WIDTH, WIN_HEIGHT = 800, 840
-NUMBER_OF_ROWS = 8
-NUMBER_OF_COLUMNS = 8
 HEIGHT_OFFSET = 0.25 * WIN_HEIGHT
 
 
@@ -26,61 +24,11 @@ HEIGHT_OFFSET = 0.25 * WIN_HEIGHT
 # - A bug closes tiles
 
 
-class Tile:
-    FAKE_BUG_COLOR = [100, 0, 0]
-    BUG_COLOR = [255, 0, 0]
-    CLOSED_TILE_COLOR = [252, 166, 255]
-    OPEN_TILE_COLOR = [252, 255, 166, 0]
-    TILE_WIDTH = WIN_WIDTH / NUMBER_OF_COLUMNS
-    TILE_HEIGHT = (WIN_HEIGHT - HEIGHT_OFFSET) / NUMBER_OF_ROWS
-
-    def __init__(self):
-        self.opened: bool = False
-        self.position: Tuple[int, int] = (0, 0)
-        self.bug: Bug = Bug.NO_BUG
-        self.found_bug: bool = False
-
-    @property
-    def bug_position(self) -> Tuple[int, int]:
-        bug_pos_x = self.position[0] + 5
-        bug_pos_y = self.position[1] + 5
-        return bug_pos_x, bug_pos_y
-
-    def draw_tile(self, scr: pygame.Surface):
-        board_rect = [self.position[0], self.position[1], Tile.TILE_WIDTH,
-                      Tile.TILE_HEIGHT]
-
-        rect: pygame.Surface = pygame.Surface((Tile.TILE_WIDTH, Tile.TILE_HEIGHT))
-        if (Bug.BOARD_OPENER in on_play_bugs and not self.opened) or (
-                self.opened and Bug.BOARD_OPENER not in on_play_bugs):
-            rect.set_alpha(12)
-            rect.fill(Tile.OPEN_TILE_COLOR)
-            scr.blit(rect, self.position)
-            if self.bug != Bug.NO_BUG:
-                if self.bug == Bug.FAKE_BUG:
-                    bug_image = pygame.image.load('resources/fake_bug.gif').convert()
-                else:
-                    bug_image = pygame.image.load('resources/bug.gif').convert()
-                scr.blit(bug_image, self.bug_position)
-        else:
-            tile_image = pygame.image.load('resources/tile.gif').convert()
-            scr.blit(tile_image, self.position)
-
-        pygame.draw.rect(scr, BOARD_LIMITS_COLOR, board_rect, 1)
-
-    def is_in_range(self, position: Tuple[int, int]) -> bool:
-        if position[0] < self.position[0] or position[0] > self.position[0] + Tile.TILE_WIDTH:
-            return False
-        if position[1] < self.position[1] or position[1] > self.position[1] + Tile.TILE_HEIGHT:
-            return False
-        return True
-
-
 def draw_tile_board(scr: pygame.Surface, board: List[Tile]):
     limit_board: pygame.Rect = [0, HEIGHT_OFFSET, WIN_WIDTH, 0.75 * WIN_HEIGHT]
     pygame.draw.rect(scr, BOARD_LIMITS_COLOR, limit_board, 1)
     for tile in board:
-        tile.draw_tile(scr)
+        tile.draw_tile(scr, on_play_bugs)
 
 
 def alter_position(position: Tuple[int, int]) -> Tuple[int, int]:
@@ -117,8 +65,8 @@ def board_init() -> List[Tile]:
     board: List[Tile] = []
     for row in range(0, NUMBER_OF_ROWS):
         for column in range(0, NUMBER_OF_COLUMNS):
-            created_tile = Tile()
-            created_tile.position = row * Tile.TILE_WIDTH, HEIGHT_OFFSET + column * Tile.TILE_HEIGHT
+            position = row * Tile.TILE_WIDTH, HEIGHT_OFFSET + column * Tile.TILE_HEIGHT
+            created_tile = Tile(height_offset=HEIGHT_OFFSET, position=position)
             board.append(created_tile)
 
     return board
@@ -168,12 +116,13 @@ def bug_tile_closer(board: List[Tile]) -> Bug:
     return Bug.NO_BUG
 
 
+window = Window(WIN_WIDTH, WIN_HEIGHT, 'Bugs on the desert')
+text_surface: pygame.Surface = window.render_text('Click on the bugs!')
+Tile.set_tile_size(window_size=window.size, height_offset=HEIGHT_OFFSET)
+
 playing_board: List[Tile] = board_init()
 on_play_bugs: List[Bug] = bug_init(playing_board)
 found_bugs: List[Bug] = []
-
-window = Window(WIN_WIDTH, WIN_HEIGHT, 'Bugs on the desert')
-text_surface: pygame.Surface = window.render_text('Click on the bugs!')
 
 window.background_image = pathlib.Path('resources/background.jpg')
 bug_mover_counter = 5
