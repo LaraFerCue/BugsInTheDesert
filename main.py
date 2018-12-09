@@ -1,11 +1,11 @@
 import pathlib
 import sys
-from enum import Enum
 from random import randrange
 from typing import Tuple, List
 
 import pygame
 
+from src.bug import Bug
 from src.window import Window
 
 BOARD_LIMITS_COLOR = 155, 0, 0
@@ -24,20 +24,6 @@ HEIGHT_OFFSET = 0.25 * WIN_HEIGHT
 # - A bug makes the bugs move around -> bugs will be in fixed positions
 # - A bug creates fake bug tiles
 # - A bug closes tiles
-class Bug(Enum):
-    BOARD_OPENER = 0
-    HORIZONTAL_TILE_TRANSLATOR = 1
-    VERTICAL_TILE_TRANSLATOR = 2
-    HORIZONTAL_TILE_REVERTER = 3
-    VERTICAL_TILE_REVERTER = 4
-    BUG_MOVER = 5
-    BUG_FAKER = 6
-    TILE_CLOSER = 7
-    FAKE_BUG = 99
-    NO_BUG = -1
-
-    def __str__(self):
-        return self.name
 
 
 class Tile:
