@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import Tuple
 
 import pygame
 
@@ -34,12 +34,11 @@ class Tile:
     def tile_size(self) -> Tuple[int, int]:
         return Tile.TILE_WIDTH, Tile.TILE_HEIGHT
 
-    def draw_tile(self, scr: pygame.Surface, on_play_bugs: List[Bug]):
+    def draw_tile(self, scr: pygame.Surface, inverted: bool):
         board_rect = [self.position[0], self.position[1], Tile.TILE_WIDTH, Tile.TILE_HEIGHT]
 
         rect: pygame.Surface = pygame.Surface(self.tile_size)
-        if (Bug.BOARD_OPENER in on_play_bugs and not self.opened) or (
-                self.opened and Bug.BOARD_OPENER not in on_play_bugs):
+        if (self.opened and not inverted) or (not self.opened and inverted):
             rect.set_alpha(12)
             rect.fill(Tile.OPEN_TILE_COLOR)
             scr.blit(rect, self.position)

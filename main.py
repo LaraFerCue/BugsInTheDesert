@@ -13,22 +13,11 @@ WINDOW = WIN_WIDTH, WIN_HEIGHT = 800, 840
 HEIGHT_OFFSET = 0.25 * WIN_HEIGHT
 
 
-# Bugs to be fixed:
-# - A bug makes all the tiles open -> closes the tiles
-# - A bug makes the click events to translate a number of tiles horizontally
-# - A bug makes the click events to translate a number of tiles vertically
-# - A bug makes the click events to be reverted on the board horizontally
-# - A bug makes the click events to be reverted on the board vertically
-# - A bug makes the bugs move around -> bugs will be in fixed positions
-# - A bug creates fake bug tiles
-# - A bug closes tiles
-
-
-def draw_tile_board(scr: pygame.Surface, board: List[Tile]):
+def draw_tile_board(scr: pygame.Surface, board: List[Tile], active_bugs: List[Bug]):
     limit_board: pygame.Rect = [0, HEIGHT_OFFSET, WIN_WIDTH, 0.75 * WIN_HEIGHT]
     pygame.draw.rect(scr, BOARD_LIMITS_COLOR, limit_board, 1)
     for tile in board:
-        tile.draw_tile(scr, on_play_bugs)
+        tile.draw_tile(scr, Bug.BOARD_OPENER in active_bugs)
 
 
 def alter_position(position: Tuple[int, int]) -> Tuple[int, int]:
@@ -172,5 +161,5 @@ while True:
         bug_text_surface: pygame.Surface = window.render_text(f'Bug {bug_found} found!')
         window.draw_surface(bug_text_surface, (50, 80))
 
-    draw_tile_board(window.screen, board=playing_board)
+    draw_tile_board(window.screen, board=playing_board, active_bugs=on_play_bugs)
     window.update()
