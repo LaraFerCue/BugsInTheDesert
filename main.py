@@ -1,46 +1,17 @@
 import pathlib
 import sys
 from random import randrange
-from typing import Tuple, List
+from typing import List
 
 import pygame
 
 from src.bug import Bug
 from src.board import Tile, NUMBER_OF_ROWS, NUMBER_OF_COLUMNS, draw_tile_board
+from src.events import alter_position, mouse_clicked
 from src.window import Window
 
 WINDOW = WIN_WIDTH, WIN_HEIGHT = 800, 840
 HEIGHT_OFFSET = 0.25 * WIN_HEIGHT
-
-
-def alter_position(position: Tuple[int, int], active_bugs: List[Bug],
-                   win_size: Tuple[int, int], height_offset: int) -> Tuple[int, int]:
-    x_coord = position[0]
-    y_coord = position[1]
-
-    if Bug.HORIZONTAL_TILE_TRANSLATOR in active_bugs:
-        x_coord = (x_coord + 4 * Tile.TILE_WIDTH) % win_size[0]
-    if Bug.VERTICAL_TILE_TRANSLATOR in active_bugs:
-        y_coord = (y_coord + 4 * Tile.TILE_HEIGHT) % win_size[1]
-    if Bug.HORIZONTAL_TILE_REVERTER in active_bugs:
-        x_coord = win_size[0] - x_coord
-    if Bug.VERTICAL_TILE_REVERTER in active_bugs:
-        y_coord = win_size[1] - y_coord + height_offset
-
-    return x_coord, y_coord
-
-
-def mouse_clicked(board: List[Tile], position: Tuple[int, int]) -> Bug:
-    for tile in board:
-        if tile.is_in_range(position):
-            if tile.bug != Bug.NO_BUG and not tile.found_bug and tile.bug != Bug.FAKE_BUG:
-                bug = on_play_bugs[0]
-                print(f'bug {bug} found')
-                tile.found_bug = True
-                tile.opened = True
-                return bug
-            tile.opened = True
-    return Bug.NO_BUG
 
 
 def board_init() -> List[Tile]:
@@ -118,7 +89,7 @@ while True:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             pos = alter_position(position=event.pos, active_bugs=on_play_bugs, win_size=window.size,
                                  height_offset=HEIGHT_OFFSET)
-            bug_found = mouse_clicked(playing_board, pos)
+            bug_found = mouse_clicked(playing_board, pos, active_bugs=on_play_bugs)
             if bug_found != Bug.NO_BUG:
                 on_play_bugs.remove(bug_found)
                 found_bugs.append(bug_found)
