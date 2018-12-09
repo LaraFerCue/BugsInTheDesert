@@ -6,18 +6,11 @@ from typing import Tuple, List
 import pygame
 
 from src.bug import Bug
-from src.board import Tile, NUMBER_OF_ROWS, NUMBER_OF_COLUMNS, BOARD_LIMITS_COLOR
+from src.board import Tile, NUMBER_OF_ROWS, NUMBER_OF_COLUMNS, draw_tile_board
 from src.window import Window
 
 WINDOW = WIN_WIDTH, WIN_HEIGHT = 800, 840
 HEIGHT_OFFSET = 0.25 * WIN_HEIGHT
-
-
-def draw_tile_board(scr: pygame.Surface, board: List[Tile], active_bugs: List[Bug]):
-    limit_board: pygame.Rect = [0, HEIGHT_OFFSET, WIN_WIDTH, 0.75 * WIN_HEIGHT]
-    pygame.draw.rect(scr, BOARD_LIMITS_COLOR, limit_board, 1)
-    for tile in board:
-        tile.draw_tile(scr, Bug.BOARD_OPENER in active_bugs)
 
 
 def alter_position(position: Tuple[int, int]) -> Tuple[int, int]:
@@ -161,5 +154,5 @@ while True:
         bug_text_surface: pygame.Surface = window.render_text(f'Bug {bug_found} found!')
         window.draw_surface(bug_text_surface, (50, 80))
 
-    draw_tile_board(window.screen, board=playing_board, active_bugs=on_play_bugs)
+    draw_tile_board(window, board=playing_board, active_bugs=on_play_bugs, height_offset=HEIGHT_OFFSET)
     window.update()
