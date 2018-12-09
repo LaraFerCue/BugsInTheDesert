@@ -13,26 +13,26 @@ WINDOW = WIN_WIDTH, WIN_HEIGHT = 800, 840
 HEIGHT_OFFSET = 0.25 * WIN_HEIGHT
 
 
-def alter_position(position: Tuple[int, int]) -> Tuple[int, int]:
+def alter_position(position: Tuple[int, int], active_bugs: List[Bug],
+                   win_size: Tuple[int, int], height_offset: int) -> Tuple[int, int]:
     x_coord = position[0]
     y_coord = position[1]
 
-    if Bug.HORIZONTAL_TILE_TRANSLATOR in on_play_bugs:
-        x_coord = (x_coord + 4 * Tile.TILE_WIDTH) % WIN_WIDTH
-    if Bug.VERTICAL_TILE_TRANSLATOR in on_play_bugs:
-        y_coord = (y_coord + 4 * Tile.TILE_HEIGHT) % WIN_HEIGHT
-    if Bug.HORIZONTAL_TILE_REVERTER in on_play_bugs:
-        x_coord = WIN_WIDTH - x_coord
-    if Bug.VERTICAL_TILE_REVERTER in on_play_bugs:
-        y_coord = WIN_HEIGHT - y_coord + HEIGHT_OFFSET
+    if Bug.HORIZONTAL_TILE_TRANSLATOR in active_bugs:
+        x_coord = (x_coord + 4 * Tile.TILE_WIDTH) % win_size[0]
+    if Bug.VERTICAL_TILE_TRANSLATOR in active_bugs:
+        y_coord = (y_coord + 4 * Tile.TILE_HEIGHT) % win_size[1]
+    if Bug.HORIZONTAL_TILE_REVERTER in active_bugs:
+        x_coord = win_size[0] - x_coord
+    if Bug.VERTICAL_TILE_REVERTER in active_bugs:
+        y_coord = win_size[1] - y_coord + height_offset
 
     return x_coord, y_coord
 
 
 def mouse_clicked(board: List[Tile], position: Tuple[int, int]) -> Bug:
-    buggy_position = alter_position(position)
     for tile in board:
-        if tile.is_in_range(buggy_position):
+        if tile.is_in_range(position):
             if tile.bug != Bug.NO_BUG and not tile.found_bug and tile.bug != Bug.FAKE_BUG:
                 bug = on_play_bugs[0]
                 print(f'bug {bug} found')
@@ -116,7 +116,9 @@ while True:
         if event.type == pygame.QUIT:
             sys.exit()
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            bug_found = mouse_clicked(playing_board, event.pos)
+            pos = alter_position(position=event.pos, active_bugs=on_play_bugs, win_size=window.size,
+                                 height_offset=HEIGHT_OFFSET)
+            bug_found = mouse_clicked(playing_board, pos)
             if bug_found != Bug.NO_BUG:
                 on_play_bugs.remove(bug_found)
                 found_bugs.append(bug_found)
