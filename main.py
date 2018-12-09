@@ -1,13 +1,13 @@
 import pathlib
 import sys
 from random import randrange
-from typing import List
+from typing import List, Dict, Tuple, Callable
 
 import pygame
 
 from src.bug import Bug
 from src.board import Tile, NUMBER_OF_ROWS, NUMBER_OF_COLUMNS, draw_tile_board
-from src.events import alter_position, mouse_clicked
+from src.events import alter_position, mouse_clicked, bug_mover, bug_faker, bug_tile_closer
 from src.window import Window
 
 WINDOW = WIN_WIDTH, WIN_HEIGHT = 800, 840
@@ -38,50 +38,27 @@ def bug_init(board: List[Tile]) -> List[Bug]:
     return bugs
 
 
-def bug_mover(board: List[Tile]):
-    for tile in board:
-        if tile.bug != Bug.NO_BUG and not tile.opened:
-            number_attempts = 10
-            position = randrange(NUMBER_OF_ROWS * NUMBER_OF_COLUMNS - 1)
-            while (board[position].bug != Bug.NO_BUG or board[position].opened) and number_attempts > 0:
-                position = randrange(NUMBER_OF_ROWS * NUMBER_OF_COLUMNS - 1)
-                number_attempts -= 1
-            if number_attempts:
-                board[position].bug = tile.bug
-                tile.bug = Bug.NO_BUG
-
-
-def bug_faker(board: List[Tile]):
-    for tile in board:
-        if tile.bug == Bug.NO_BUG and not tile.opened:
-            tile.bug = Bug.FAKE_BUG
-            return
-
-
-def bug_tile_closer(board: List[Tile]) -> Bug:
-    for tile in board:
-        if tile.opened:
-            tile.opened = False
-            if tile.bug != Bug.NO_BUG and tile.bug != Bug.FAKE_BUG:
-                tile.found_bug = False
-                return tile.bug
-            return Bug.NO_BUG
-    return Bug.NO_BUG
-
-
 window = Window(WIN_WIDTH, WIN_HEIGHT, 'Bugs on the desert')
 text_surface: pygame.Surface = window.render_text('Click on the bugs!')
 Tile.set_tile_size(window_size=window.size, height_offset=HEIGHT_OFFSET)
 
 playing_board: List[Tile] = board_init()
 on_play_bugs: List[Bug] = bug_init(playing_board)
-found_bugs: List[Bug] = []
 
 window.background_image = pathlib.Path('resources/background.jpg')
-bug_mover_counter = 5
-bug_faker_counter = 2
-bug_tile_closer_counter = 5
 bug_found = Bug.NO_BUG
+
+events: Dict[Bug, Tuple[int, Callable[[List[Tile], List[Bug]], List[Bug]]]] = {
+    Bug.BUG_MOVER: (5, bug_mover),
+    Bug.BUG_FAKER: (2, bug_faker),
+    Bug.TILE_CLOSER: (5, bug_tile_closer)
+}
+iterators: Dict[Bug, int] = {
+    Bug.BUG_MOVER: 0,
+    Bug.BUG_FAKER: 0,
+    Bug.TILE_CLOSER: 0
+}
+
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -90,31 +67,14 @@ while True:
             pos = alter_position(position=event.pos, active_bugs=on_play_bugs, win_size=window.size,
                                  height_offset=HEIGHT_OFFSET)
             bug_found = mouse_clicked(playing_board, pos, active_bugs=on_play_bugs)
-            if bug_found != Bug.NO_BUG:
-                on_play_bugs.remove(bug_found)
-                found_bugs.append(bug_found)
-            if Bug.BUG_MOVER in on_play_bugs:
-                if bug_mover_counter > 0:
-                    bug_mover_counter -= 1
-                else:
-                    bug_mover(playing_board)
-                    bug_mover_counter = 5
-            if Bug.BUG_FAKER in on_play_bugs:
-                if bug_faker_counter > 0:
-                    bug_faker_counter -= 1
-                else:
-                    bug_faker(playing_board)
-                    bug_faker_counter = 2
-            if Bug.TILE_CLOSER in on_play_bugs:
-                if bug_tile_closer_counter > 0:
-                    bug_tile_closer_counter -= 1
-                else:
-                    bug = bug_tile_closer(playing_board)
-                    bug_tile_closer_counter = 5
-                    if bug != Bug.NO_BUG and bug != Bug.FAKE_BUG:
-                        bug = found_bugs[len(found_bugs) - 1]
-                        found_bugs.remove(bug)
-                        on_play_bugs = [bug] + on_play_bugs
+
+            for event_bug, event_info in events.items():
+                if event_bug in on_play_bugs:
+                    if iterators[event_bug] < event_info[0]:
+                        iterators[event_bug] += 1
+                    else:
+                        iterators[event_bug] = 0
+                        on_play_bugs = event_info[1](playing_board, on_play_bugs)
 
     window.draw_background()
 

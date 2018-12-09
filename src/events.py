@@ -1,6 +1,7 @@
+from random import randrange
 from typing import Tuple, List
 
-from src.board import Tile
+from src.board import Tile, NUMBER_OF_ROWS, NUMBER_OF_COLUMNS
 from src.bug import Bug
 
 
@@ -31,3 +32,36 @@ def mouse_clicked(board: List[Tile], position: Tuple[int, int], active_bugs: Lis
                 return bug
             tile.opened = True
     return Bug.NO_BUG
+
+
+def bug_mover(board: List[Tile], active_bugs: List[Bug]) -> List[Bug]:
+    for tile in board:
+        if tile.bug != Bug.NO_BUG and not tile.opened:
+            number_attempts = 10
+            position = randrange(NUMBER_OF_ROWS * NUMBER_OF_COLUMNS - 1)
+            while (board[position].bug != Bug.NO_BUG or board[position].opened) and number_attempts > 0:
+                position = randrange(NUMBER_OF_ROWS * NUMBER_OF_COLUMNS - 1)
+                number_attempts -= 1
+            if number_attempts:
+                board[position].bug = tile.bug
+                tile.bug = Bug.NO_BUG
+    return active_bugs
+
+
+def bug_faker(board: List[Tile], active_bugs: List[Bug]) -> List[Bug]:
+    for tile in board:
+        if tile.bug == Bug.NO_BUG and not tile.opened:
+            tile.bug = Bug.FAKE_BUG
+            return active_bugs
+    return active_bugs
+
+
+def bug_tile_closer(board: List[Tile], active_bugs: List[Bug]) -> List[Bug]:
+    for tile in board:
+        if tile.opened:
+            tile.opened = False
+            if tile.bug != Bug.NO_BUG and tile.bug != Bug.FAKE_BUG:
+                tile.found_bug = False
+                return [Bug(active_bugs[0].value - 1)] + active_bugs
+            return active_bugs
+    return active_bugs
