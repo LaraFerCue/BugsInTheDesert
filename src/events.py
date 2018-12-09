@@ -1,8 +1,83 @@
 from random import randrange
 from typing import Tuple, List
 
-from src.board import Tile, NUMBER_OF_ROWS, NUMBER_OF_COLUMNS
+from src.board import Tile
 from src.bug import Bug
+
+
+def get_random_board_position(board: List[Tile], with_bug: bool = False, must_be_closed: bool = False):
+    position = randrange(len(board) - 1)
+    number_of_attempts = 10
+
+    tile = board[position]
+    while (tile.bug != Bug.NO_BUG) != with_bug or (tile.is_open and must_be_closed) and number_of_attempts > 0:
+        position = randrange(len(board) - 1)
+        tile = board[position]
+        number_of_attempts -= 1
+
+    return position if number_of_attempts else -1
+
+
+class Event:
+    def __init__(self, counter: int = -1):
+        self._counter: int = counter
+        self._iter: int = 0
+
+    def action(self, board: List[Tile], active_bugs: List[Bug]) -> List[Bug]:
+        pass
+
+
+class BugMoverEvent(Event):
+    def action(self, board: List[Tile], active_bugs: List[Bug]) -> List[Bug]:
+        if Bug.BUG_MOVER not in active_bugs:
+            return active_bugs
+
+        if self._iter < self._counter:
+            self._iter += 1
+        else:
+            self._iter = 0
+            for tile in board:
+                if tile.bug != Bug.NO_BUG and not tile.is_open:
+                    position = get_random_board_position(board, False, True)
+                    if position >= 0:
+                        board[position].bug = tile.bug
+                        tile.bug = Bug.NO_BUG
+        return active_bugs
+
+
+class BugFakerEvent(Event):
+    def action(self, board: List[Tile], active_bugs: List[Bug]) -> List[Bug]:
+        if Bug.BUG_FAKER not in active_bugs:
+            return active_bugs
+
+        if self._iter < self._counter:
+            self._iter += 1
+        else:
+            self._iter = 0
+            position = get_random_board_position(board, False, False)
+            board[position].bug = Bug.FAKE_BUG
+        return active_bugs
+
+
+class BugTileCloserEvent(Event):
+    def action(self, board: List[Tile], active_bugs: List[Bug]) -> List[Bug]:
+        if Bug.BOARD_OPENER not in active_bugs:
+            return active_bugs
+
+        if self._iter < self._counter:
+            self._iter += 1
+        else:
+            self._iter = 0
+            for tile in board:
+                if tile.is_open:
+                    tile.is_open = False
+                    if tile.bug != Bug.NO_BUG and Bug.FAKE_BUG:
+                        found_bug = Bug(active_bugs[0].value - 1)
+                        tile.found_bug = False
+                        return [found_bug] + active_bugs
+                    return active_bugs
+
+        return active_bugs
 
 
 def alter_position(position: Tuple[int, int], active_bugs: List[Bug],
@@ -28,40 +103,7 @@ def mouse_clicked(board: List[Tile], position: Tuple[int, int], active_bugs: Lis
             if tile.bug != Bug.NO_BUG and not tile.found_bug and tile.bug != Bug.FAKE_BUG:
                 bug = active_bugs[0]
                 tile.found_bug = True
-                tile.opened = True
+                tile.is_open = True
                 return bug
-            tile.opened = True
+            tile.is_open = True
     return Bug.NO_BUG
-
-
-def bug_mover(board: List[Tile], active_bugs: List[Bug]) -> List[Bug]:
-    for tile in board:
-        if tile.bug != Bug.NO_BUG and not tile.opened:
-            number_attempts = 10
-            position = randrange(NUMBER_OF_ROWS * NUMBER_OF_COLUMNS - 1)
-            while (board[position].bug != Bug.NO_BUG or board[position].opened) and number_attempts > 0:
-                position = randrange(NUMBER_OF_ROWS * NUMBER_OF_COLUMNS - 1)
-                number_attempts -= 1
-            if number_attempts:
-                board[position].bug = tile.bug
-                tile.bug = Bug.NO_BUG
-    return active_bugs
-
-
-def bug_faker(board: List[Tile], active_bugs: List[Bug]) -> List[Bug]:
-    for tile in board:
-        if tile.bug == Bug.NO_BUG and not tile.opened:
-            tile.bug = Bug.FAKE_BUG
-            return active_bugs
-    return active_bugs
-
-
-def bug_tile_closer(board: List[Tile], active_bugs: List[Bug]) -> List[Bug]:
-    for tile in board:
-        if tile.opened:
-            tile.opened = False
-            if tile.bug != Bug.NO_BUG and tile.bug != Bug.FAKE_BUG:
-                tile.found_bug = False
-                return [Bug(active_bugs[0].value - 1)] + active_bugs
-            return active_bugs
-    return active_bugs

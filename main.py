@@ -1,13 +1,14 @@
 import pathlib
 import sys
 from random import randrange
-from typing import List, Dict, Tuple, Callable
+from typing import List
 
 import pygame
 
-from src.bug import Bug
+from src import events
 from src.board import Tile, NUMBER_OF_ROWS, NUMBER_OF_COLUMNS, draw_tile_board
-from src.events import alter_position, mouse_clicked, bug_mover, bug_faker, bug_tile_closer
+from src.bug import Bug
+from src.events import alter_position, mouse_clicked
 from src.window import Window
 
 WINDOW = WIN_WIDTH, WIN_HEIGHT = 800, 840
@@ -48,15 +49,10 @@ on_play_bugs: List[Bug] = bug_init(playing_board)
 window.background_image = pathlib.Path('resources/background.jpg')
 bug_found = Bug.NO_BUG
 
-events: Dict[Bug, Tuple[int, Callable[[List[Tile], List[Bug]], List[Bug]]]] = {
-    Bug.BUG_MOVER: (5, bug_mover),
-    Bug.BUG_FAKER: (2, bug_faker),
-    Bug.TILE_CLOSER: (5, bug_tile_closer)
-}
-iterators: Dict[Bug, int] = {
-    Bug.BUG_MOVER: 0,
-    Bug.BUG_FAKER: 0,
-    Bug.TILE_CLOSER: 0
+event_list: List[events.Event] = {
+    events.BugMoverEvent(5),
+    events.BugFakerEvent(2),
+    events.BugTileCloserEvent(5)
 }
 
 while True:
@@ -68,13 +64,8 @@ while True:
                                  height_offset=HEIGHT_OFFSET)
             bug_found = mouse_clicked(playing_board, pos, active_bugs=on_play_bugs)
 
-            for event_bug, event_info in events.items():
-                if event_bug in on_play_bugs:
-                    if iterators[event_bug] < event_info[0]:
-                        iterators[event_bug] += 1
-                    else:
-                        iterators[event_bug] = 0
-                        on_play_bugs = event_info[1](playing_board, on_play_bugs)
+            for bug_event in event_list:
+                on_play_bugs = bug_event.action(playing_board, on_play_bugs)
 
     window.draw_background()
 

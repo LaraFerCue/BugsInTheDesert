@@ -19,7 +19,7 @@ class Tile:
     TILE_HEIGHT = 0
 
     def __init__(self, height_offset: int, position: Tuple[int, int]):
-        self.opened: bool = False
+        self.is_open: bool = False
         self.position: Tuple[int, int] = position
         self.bug: Bug = Bug.NO_BUG
         self.found_bug: bool = False
@@ -39,7 +39,7 @@ class Tile:
         board_rect = [self.position[0], self.position[1], Tile.TILE_WIDTH, Tile.TILE_HEIGHT]
 
         rect: pygame.Surface = pygame.Surface(self.tile_size)
-        if (self.opened and not inverted) or (not self.opened and inverted):
+        if (self.is_open and not inverted) or (not self.is_open and inverted):
             rect.set_alpha(12)
             rect.fill(Tile.OPEN_TILE_COLOR)
             window.draw_surface(rect, self.position)
