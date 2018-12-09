@@ -39,7 +39,7 @@ class Tile:
         board_rect = [self.position[0], self.position[1], Tile.TILE_WIDTH, Tile.TILE_HEIGHT]
 
         rect: pygame.Surface = pygame.Surface(self.tile_size)
-        if (self.is_open and not inverted) or (not self.is_open and inverted):
+        if self.is_open != inverted:
             rect.set_alpha(12)
             rect.fill(Tile.OPEN_TILE_COLOR)
             window.draw_surface(rect, self.position)
@@ -73,3 +73,14 @@ def draw_tile_board(window: Window, height_offset: int, board: List[Tile], activ
     pygame.draw.rect(window.screen, BOARD_LIMITS_COLOR, limit_board, 1)
     for tile in board:
         tile.draw_tile(window, Bug.BOARD_OPENER in active_bugs)
+
+
+def board_init(height_offset: int) -> List[Tile]:
+    board: List[Tile] = []
+    for row in range(0, NUMBER_OF_ROWS):
+        for column in range(0, NUMBER_OF_COLUMNS):
+            position = row * Tile.TILE_WIDTH, height_offset + column * Tile.TILE_HEIGHT
+            created_tile = Tile(height_offset=height_offset, position=position)
+            board.append(created_tile)
+
+    return board

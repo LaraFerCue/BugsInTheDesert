@@ -6,24 +6,13 @@ from typing import List
 import pygame
 
 from src import events
-from src.board import Tile, NUMBER_OF_ROWS, NUMBER_OF_COLUMNS, draw_tile_board
+from src.board import Tile, NUMBER_OF_ROWS, NUMBER_OF_COLUMNS, draw_tile_board, board_init
 from src.bug import Bug
 from src.events import alter_position, mouse_clicked
 from src.window import Window
 
 WINDOW = WIN_WIDTH, WIN_HEIGHT = 800, 840
 HEIGHT_OFFSET = 0.25 * WIN_HEIGHT
-
-
-def board_init() -> List[Tile]:
-    board: List[Tile] = []
-    for row in range(0, NUMBER_OF_ROWS):
-        for column in range(0, NUMBER_OF_COLUMNS):
-            position = row * Tile.TILE_WIDTH, HEIGHT_OFFSET + column * Tile.TILE_HEIGHT
-            created_tile = Tile(height_offset=HEIGHT_OFFSET, position=position)
-            board.append(created_tile)
-
-    return board
 
 
 def bug_init(board: List[Tile]) -> List[Bug]:
@@ -43,7 +32,7 @@ window = Window(WIN_WIDTH, WIN_HEIGHT, 'Bugs on the desert')
 text_surface: pygame.Surface = window.render_text('Click on the bugs!')
 Tile.set_tile_size(window_size=window.size, height_offset=HEIGHT_OFFSET)
 
-playing_board: List[Tile] = board_init()
+playing_board: List[Tile] = board_init(HEIGHT_OFFSET)
 on_play_bugs: List[Bug] = bug_init(playing_board)
 
 window.background_image = pathlib.Path('resources/background.jpg')
@@ -63,6 +52,8 @@ while True:
             pos = alter_position(position=event.pos, active_bugs=on_play_bugs, win_size=window.size,
                                  height_offset=HEIGHT_OFFSET)
             bug_found = mouse_clicked(playing_board, pos, active_bugs=on_play_bugs)
+            if bug_found in on_play_bugs:
+                on_play_bugs.remove(bug_found)
 
             for bug_event in event_list:
                 on_play_bugs = bug_event.action(playing_board, on_play_bugs)
