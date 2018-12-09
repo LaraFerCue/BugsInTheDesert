@@ -1,9 +1,12 @@
+import pathlib
 import sys
 from enum import Enum
 from random import randrange
 from typing import Tuple, List
 
 import pygame
+
+from src.window import Window
 
 BOARD_LIMITS_COLOR = 155, 0, 0
 WINDOW = WIN_WIDTH, WIN_HEIGHT = 800, 840
@@ -182,15 +185,11 @@ def bug_tile_closer(board: List[Tile]) -> Bug:
 playing_board: List[Tile] = board_init()
 on_play_bugs: List[Bug] = bug_init(playing_board)
 found_bugs: List[Bug] = []
-pygame.init()
-pygame.font.init()
-comic_sans_font: pygame.font.Font = pygame.font.SysFont('Comic Sans MS', 20)
 
-text_surface: pygame.Surface = comic_sans_font.render('Click on the bugs!', False, (0, 0, 0))
+window = Window(WIN_WIDTH, WIN_HEIGHT, 'Bugs on the desert')
+text_surface: pygame.Surface = window.render_text('Click on the bugs!')
 
-screen: pygame.Surface = pygame.display.set_mode(WINDOW)
-pygame.display.set_caption('Bugs on the desert')
-bg_image = pygame.image.load('resources/background.jpg').convert()
+window.background_image = pathlib.Path('resources/background.jpg')
 bug_mover_counter = 5
 bug_faker_counter = 2
 bug_tile_closer_counter = 5
@@ -227,17 +226,16 @@ while True:
                         found_bugs.remove(bug)
                         on_play_bugs = [bug] + on_play_bugs
 
-    screen.fill(color=(255, 255, 255))
-    screen.blit(bg_image, [0, 0])
+    window.draw_background()
 
-    screen.blit(text_surface, (50, 50))
+    window.draw_surface(text_surface, (50, 50))
 
     if not len(on_play_bugs):
-        bug_text_surface: pygame.Surface = comic_sans_font.render(f'No bugs left! Congratulations!', False, (0, 0, 0))
-        screen.blit(bug_text_surface, (50, 80))
+        bug_text_surface: pygame.Surface = window.render_text(f'No bugs left! Congratulations!')
+        window.draw_surface(bug_text_surface, (50, 80))
     elif bug_found != Bug.NO_BUG:
-        bug_text_surface: pygame.Surface = comic_sans_font.render(f'Bug {bug_found} found!', False, (0, 0, 0))
-        screen.blit(bug_text_surface, (50, 80))
+        bug_text_surface: pygame.Surface = window.render_text(f'Bug {bug_found} found!')
+        window.draw_surface(bug_text_surface, (50, 80))
 
-    draw_tile_board(screen, board=playing_board)
-    pygame.display.flip()
+    draw_tile_board(window.screen, board=playing_board)
+    window.update()
